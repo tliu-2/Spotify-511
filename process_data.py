@@ -46,13 +46,13 @@ def add_song_occurrences(df):
 
 if __name__ == '__main__':
 
-    df = pd.read_csv('./processed_data/spotify_splice_audio_features.csv')
-    final_df = add_song_occurrences(df=df)
-    final_df = add_artist_occurrences(df=final_df)
-    final_df = add_album_occurrences(df=final_df)
-    final_df = final_df.sort_values(by=['pid', 'pos'])
-    final_df.to_parquet(f'./processed_data/processed_spotify_splice_audio_features.parquet')
-    final_df.to_csv(f'./processed_data/processed_spotify_splice_audio_features.csv')
+    # df = pd.read_csv('./processed_data/spotify_splice_audio_features.csv')
+    # final_df = add_song_occurrences(df=df)
+    # final_df = add_artist_occurrences(df=final_df)
+    # final_df = add_album_occurrences(df=final_df)
+    # final_df = final_df.sort_values(by=['pid', 'pos'])
+    # final_df.to_parquet(f'./processed_data/processed_spotify_splice_audio_features.parquet')
+    # final_df.to_csv(f'./processed_data/processed_spotify_splice_audio_features.csv')
 
 
     path = "./data/*.parquet"
@@ -76,6 +76,9 @@ if __name__ == '__main__':
 
         final_df['raw_artist_uri'] = final_df['artist_uri'].str.split(':')
         final_df['raw_artist_uri'] = final_df['raw_artist_uri'].str[2]
+
+        final_df['raw_track_uri'] = final_df['track_uri'].str.split(':')
+        final_df['raw_track_uri'] = final_df['raw_track_uri'].str[2]
 
         # Output to csv and parquet. csv for tableau usage, parquet for Python usage.
         final_df.to_csv(f'./processed_data/processed_{new_fname}.csv', index=False)
