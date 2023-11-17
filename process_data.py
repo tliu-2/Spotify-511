@@ -74,6 +74,9 @@ if __name__ == '__main__':
         new_fname = new_fname[1]
         new_fname = new_fname.replace('.parquet', '')
 
+        final_df['raw_artist_uri'] = final_df['artist_uri'].str.split(':')
+        final_df['raw_artist_uri'] = final_df['raw_artist_uri'].str[2]
+
         # Output to csv and parquet. csv for tableau usage, parquet for Python usage.
         final_df.to_csv(f'./processed_data/processed_{new_fname}.csv', index=False)
         final_df.to_parquet(f'./processed_data/processed_{new_fname}.parquet')
