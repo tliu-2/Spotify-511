@@ -166,6 +166,9 @@ if __name__ == '__main__':
         artists = pull_artists(splice_list=test_artist_splice)
         track_features = pull_song_features(splice_list=test_track_splice)
 
+        artists['followers'] = artists['followers'].str.findall(r'\d+')
+        artists['followers'] = artists['followers'].apply(lambda x: ' '.join(dict.fromkeys(x).keys()))
+
         new_fname = new_fname.replace('.parquet', '')
         audio_features.to_csv(f'./data/songs_{new_fname}.csv', index=False)
         artists.to_csv(f'./data/artists_{new_fname}.csv', index=False)
