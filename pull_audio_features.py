@@ -3,10 +3,38 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import glob
 import time
+import ast
+
 
 # Insert your client id and client secret from the Spotify Dashboard View.
-Client_ID = None
-Client_Secret = None
+Client_ID = 'None'
+Client_Secret = 'None'
+
+
+def expand_artist_info(row, max_artists=3):
+    artist_info = {}
+    # Do a bunch of formatting to get it into a series and then return it.
+    for i in range(max_artists):
+        artist_info['artist_name_{}'.format(i+1)] = ''
+        artist_info['artist_id_{}'.format(i+1)] = ''
+        artist_info['artist_uri_{}'.format(i+1)] = ''
+
+    for i, artist in enumerate(row['artists']):
+        if i < max_artists:
+            artist_info['artist_name_{}'.format(i+1)] = artist.get('name', '')
+            artist_info['artist_id_{}'.format(i+1)] = artist.get('id', '')
+            artist_info['artist_uri_{}'.format(i+1)] = artist.get('uri', '')
+        else:
+            break
+
+    return pd.Series(artist_info)
+
+def extract_album_details(row):
+    album = row['album']
+    # Do a bunch of formatting to get it into a series and then return it.
+    return pd.Series([album.get('name', ''), album.get('id', ''), album.get('uri', ''), album.get('album_type', '')],
+                     index=['album_name', 'album_id', 'album_uri', 'album_type'])
+
 
 
 def pull_song_features(splice_list):
@@ -166,11 +194,25 @@ if __name__ == '__main__':
         artists = pull_artists(splice_list=test_artist_splice)
         track_features = pull_song_features(splice_list=test_track_splice)
 
-        artists['followers'] = artists['followers'].str.findall(r'\d+')
-        artists['followers'] = artists['followers'].apply(lambda x: ' '.join(dict.fromkeys(x).keys()))
+        # Extract the followers value.
+        artists['followers'] = artists['followers'].apply(lambda x: x.get('total', 0) if isinstance(x, dict) else 0)
+
+        # Ensure the 'artists' and 'album' columns are in the correct format
+        track_features['artists'] = track_features['artists'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+        track_features['album'] = track_features['album'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+
+        # Apply the function to expand artist information
+        artist_info = track_features.apply(expand_artist_info, axis=1)
+        track_features = pd.concat([track_features, artist_info], axis=1)
+
+        # Apply the function to extract album details
+        album_details = track_features.apply(extract_album_details, axis=1)
+        track_features = pd.concat([track_features, album_details], axis=1)
+
 
         new_fname = new_fname.replace('.parquet', '')
-        audio_features.to_csv(f'./data/songs_{new_fname}.csv', index=False)
-        artists.to_csv(f'./data/artists_{new_fname}.csv', index=False)
-        track_features.to_csv(f'./data/track_feature_{new_fname}.csv', index=False)
+
+        audio_features.to_csv(f'./data/songs_{new_fname}.csv', index=False, encoding='utf-8-sig')
+        artists.to_csv(f'./data/artists_{new_fname}.csv', index=False, encoding='utf-8-sig')
+        track_features.to_csv(f'./data/track_feature_{new_fname}.csv', index=False, encoding='utf-8-sig')
         # final_df.to_csv(f'./data/combined_{new_fname}.csv', index=False)

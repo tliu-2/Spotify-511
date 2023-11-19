@@ -1,4 +1,4 @@
-danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,type,raw_track_uri,uri,track_href,analysis_url,duration_ms,time_signature
+﻿danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,type,raw_track_uri,uri,track_href,analysis_url,duration_ms,time_signature
 0.904,0.813,4,-7.105,0,0.121,0.0311,0.00697,0.0471,0.81,125.461,audio_features,0UaMYEvWZi0ZqiDOoHU3YI,spotify:track:0UaMYEvWZi0ZqiDOoHU3YI,https://api.spotify.com/v1/tracks/0UaMYEvWZi0ZqiDOoHU3YI,https://api.spotify.com/v1/audio-analysis/0UaMYEvWZi0ZqiDOoHU3YI,226864,4
 0.774,0.838,5,-3.914,0,0.114,0.0249,0.025,0.242,0.924,143.04,audio_features,6I9VzXrHxO9rA9A5euc8Ak,spotify:track:6I9VzXrHxO9rA9A5euc8Ak,https://api.spotify.com/v1/tracks/6I9VzXrHxO9rA9A5euc8Ak,https://api.spotify.com/v1/audio-analysis/6I9VzXrHxO9rA9A5euc8Ak,198800,4
 0.664,0.758,2,-6.583,0,0.21,0.00238,0.0,0.0598,0.701,99.259,audio_features,0WqIKmW4BTrj3eJFmnCKMv,spotify:track:0WqIKmW4BTrj3eJFmnCKMv,https://api.spotify.com/v1/tracks/0WqIKmW4BTrj3eJFmnCKMv,https://api.spotify.com/v1/audio-analysis/0WqIKmW4BTrj3eJFmnCKMv,235933,4
