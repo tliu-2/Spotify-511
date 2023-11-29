@@ -7,8 +7,8 @@ import ast
 
 
 # Insert your client id and client secret from the Spotify Dashboard View.
-Client_ID = '61777a9693324d0c999d2b34f51c9191'
-Client_Secret = 'e59958fa2f954fed915d70c1d767b427'
+Client_ID = 'None'
+Client_Secret = 'None'
 
 
 def expand_artist_info(row, max_artists=3):
