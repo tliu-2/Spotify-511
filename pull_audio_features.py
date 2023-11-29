@@ -7,8 +7,8 @@ import ast
 
 
 # Insert your client id and client secret from the Spotify Dashboard View.
-Client_ID = 'None'
-Client_Secret = 'None'
+Client_ID = '61777a9693324d0c999d2b34f51c9191'
+Client_Secret = 'e59958fa2f954fed915d70c1d767b427'
 
 
 def expand_artist_info(row, max_artists=3):
@@ -187,12 +187,14 @@ if __name__ == '__main__':
         new_fname = fname.split('\\')
         new_fname = new_fname[1]
 
-        test_splice = splice_list[0:2]
-        test_artist_splice = splice_artist_list[0:2]
-        test_track_splice = track_feature_list[0:2]
-        audio_features = pull_audio_features(splice_list=test_splice)
-        artists = pull_artists(splice_list=test_artist_splice)
-        track_features = pull_song_features(splice_list=test_track_splice)
+        # test_splice = splice_list[0:2]
+        # test_artist_splice = splice_artist_list[0:2]
+        # test_track_splice = track_feature_list[0:2]
+        audio_features = pull_audio_features(splice_list=splice_list)
+        artists = pull_artists(splice_list=splice_artist_list)
+        track_features = pull_song_features(splice_list=track_feature_list)
+
+        track_features = track_features.rename(columns={'name': 'track_name', 'popularity': 'track_popularity'})
 
         # Extract the followers value.
         artists['followers'] = artists['followers'].apply(lambda x: x.get('total', 0) if isinstance(x, dict) else 0)
