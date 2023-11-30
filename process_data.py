@@ -109,8 +109,12 @@ def join_data():
         mpd['raw_track_uri'] = mpd['track_uri'].str.split(':')
         mpd['raw_track_uri'] = mpd['raw_track_uri'].str[2]
 
-        merged_df = pd.merge(mpd, audio_features, on='raw_track_uri', how='left', suffixes=('', '_audiofeature'))
-        merged_df = merged_df.merge(tracks, on='raw_track_uri', how='left', suffixes=('', '_trackfeature'))
+        test_mpd = mpd[mpd['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
+        test_audio_features = audio_features[audio_features['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
+        test_tracks = tracks[tracks['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
+
+        merged_df = pd.merge(mpd, audio_features, on='raw_track_uri', how='outer', suffixes=('', '_audiofeature'))
+        merged_df = merged_df.merge(tracks, on='raw_track_uri', how='outer', suffixes=('', '_trackfeature'))
         merged_df = merged_df.drop_duplicates(subset=['raw_track_uri', 'pid', 'pos'])
 
         audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence']
