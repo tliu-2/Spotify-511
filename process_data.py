@@ -105,9 +105,12 @@ def join_data():
         mpd = pd.read_parquet(f'./data/mpd.slice.{x}.parquet')
         tracks = pd.read_csv(f'./data/track_feature_mpd.slice.{x}.csv')
         audio_features = pd.read_csv(f'./data/songs_mpd.slice.{x}.csv')
+        artists = pd.read_csv(f'./data/artists_mpd.slice.{x}.csv')
 
         mpd['raw_track_uri'] = mpd['track_uri'].str.split(':')
         mpd['raw_track_uri'] = mpd['raw_track_uri'].str[2]
+        mpd['raw_artist_uri'] = mpd['artist_uri'].str.split(':')
+        mpd['raw_artist_uri'] = mpd['raw_artist_uri'].str[2]
 
         test_mpd = mpd[mpd['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
         test_audio_features = audio_features[audio_features['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
@@ -115,6 +118,7 @@ def join_data():
 
         merged_df = pd.merge(mpd, audio_features, on='raw_track_uri', how='outer', suffixes=('', '_audiofeature'))
         merged_df = merged_df.merge(tracks, on='raw_track_uri', how='outer', suffixes=('', '_trackfeature'))
+        merged_df = merged_df.merge(artists, on='raw_artist_uri', how='outer', suffixes=('', '_artists'))
         merged_df = merged_df.drop_duplicates(subset=['raw_track_uri', 'pid', 'pos'])
 
         audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence']
