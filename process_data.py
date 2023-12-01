@@ -42,7 +42,6 @@ def add_song_occurrences(df):
     return overall_df
 
 
-
 def categorize_feature(value, feature_name):
     if 'speechiness' in feature_name:
         return 'Spoken Word' if value > 0.66 else ('Music and Speech' if value > 0.33 else 'Music')
@@ -63,7 +62,6 @@ def categorize_feature(value, feature_name):
 
 
 def normalize_audio_features(merged_df):
-
     # audio features to be normalized
     audio_features = [
         'danceability', 'energy', 'loudness', 'speechiness',
@@ -82,6 +80,7 @@ def normalize_audio_features(merged_df):
 
     return merged_df
 
+
 def join_data():
     file_list = ['0-999', '1000-1999']
     audio_features_songs = [
@@ -98,7 +97,6 @@ def join_data():
         'acousticness_avg_playlist', 'danceability_avg_playlist', 'energy_avg_playlist', 'loudness_avg_playlist',
         'speechiness_avg_playlist', 'instrumentalness_avg_playlist', 'liveness_avg_playlist', 'valence_avg_playlist'
     ]
-
 
     final = []
     for x in file_list:
@@ -121,7 +119,8 @@ def join_data():
         merged_df = merged_df.merge(artists, on='raw_artist_uri', how='outer', suffixes=('', '_artists'))
         merged_df = merged_df.drop_duplicates(subset=['raw_track_uri', 'pid', 'pos'])
 
-        audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence']
+        audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness',
+                                  'instrumentalness', 'liveness', 'valence']
         artist_audio_features_avg = merged_df.groupby('artist_name')[audio_features_columns].mean().reset_index()
         artist_audio_features_avg.columns = ['artist_name'] + [f'{col}_avg_artist' for col in audio_features_columns]
         merged_df = pd.merge(merged_df, artist_audio_features_avg, on='artist_name', how='left')
@@ -140,19 +139,42 @@ def join_data():
         for feature in audio_features_playlists:
             merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
 
-
-
         # Normalize the audio features.
         merged_df = normalize_audio_features(merged_df)
         final.append(merged_df)
 
     final = pd.concat(final)
-    final.to_csv('./processed_data/merged_dataset.csv', encoding='utf-8-sig')
 
+    cols_to_keep = [
+        'pos', 'artist_name', 'track_name', 'duration_ms', 'album_name', 'pid', 'name', 'modified_at', 'num_artists',
+        'num_albums', 'num_tracks', 'num_followers', 'num_edits', 'playlist_duration_ms', 'collaborative',
+        'description',
+        'num_playlists_track', 'num_playlists_artist', 'raw_track_uri', 'raw_artist_uri', 'danceability', 'energy',
+        'key',
+        'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo',
+        'time_signature',
+        'explicit', 'is_playable', 'track_popularity', 'followers', 'genres', 'name_artists', 'popularity',
+        'type_artists',
+        'uri_artists', 'danceability_avg_artist', 'energy_avg_artist', 'loudness_avg_artist', 'speechiness_avg_artist',
+        'acousticness_avg_artist', 'instrumentalness_avg_artist', 'liveness_avg_artist', 'valence_avg_artist',
+        'danceability_avg_playlist', 'energy_avg_playlist', 'loudness_avg_playlist', 'speechiness_avg_playlist',
+        'acousticness_avg_playlist', 'instrumentalness_avg_playlist', 'liveness_avg_playlist', 'valence_avg_playlist',
+        'category_danceability', 'category_energy', 'category_loudness', 'category_speechiness',
+        'category_acousticness',
+        'category_instrumentalness', 'category_liveness', 'category_valence', 'category_danceability_avg_artist',
+        'category_energy_avg_artist', 'category_loudness_avg_artist', 'category_speechiness_avg_artist',
+        'category_acousticness_avg_artist', 'category_instrumentalness_avg_artist', 'category_liveness_avg_artist',
+        'category_valence_avg_artist', 'category_acousticness_avg_playlist', 'category_danceability_avg_playlist',
+        'category_energy_avg_playlist', 'category_loudness_avg_playlist', 'category_speechiness_avg_playlist',
+        'category_instrumentalness_avg_playlist', 'category_liveness_avg_playlist', 'category_valence_avg_playlist'
+
+    ]
+
+    final = final[cols_to_keep]
+    final.to_csv('./processed_data/merged_dataset.csv', encoding='utf-8-sig', index=False)
 
 
 if __name__ == '__main__':
-
     # df = pd.read_csv('./processed_data/spotify_splice_audio_features.csv')
     # final_df = add_song_occurrences(df=df)
     # final_df = add_artist_occurrences(df=final_df)
