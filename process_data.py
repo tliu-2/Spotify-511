@@ -172,6 +172,7 @@ def join_data():
 
     final = final[cols_to_keep]
     final.to_csv('./processed_data/merged_dataset.csv', encoding='utf-8-sig', index=False)
+    final.to_parquet('./processed_data/merged_dataset.parquet')
 
 
 if __name__ == '__main__':
