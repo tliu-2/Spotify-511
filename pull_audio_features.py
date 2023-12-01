@@ -9,8 +9,8 @@ import ast
 
 
 # Insert your client id and client secret from the Spotify Dashboard View.
-Client_ID = ''
-Client_Secret = ''
+Client_ID = '78631603555a4de8a9bf6fa757283374'
+Client_Secret = 'a499ca55f9384391a19cee4fe5d13c97'
 
 
 def expand_artist_info(row, max_artists=3):
@@ -70,10 +70,18 @@ def pull_song_features(splice_list, market='US'):
                 request_count += 1
 
                 if track_features and 'tracks' in track_features:
-                    results_df = pd.DataFrame(track_features['tracks'])
-                    results_df = results_df.rename(columns={'id': 'raw_track_uri'})
-                    df_list.append(results_df)
-                    success = True
+                    if None not in track_features.get('tracks'):
+                        results_df = pd.DataFrame(track_features.get('tracks'))
+                        results_df = results_df.rename(columns={'id': 'raw_track_uri'})
+                        df_list.append(results_df)
+                        success = True
+                    else:
+                        print("Performing custom manipulation !!!!!!!!")
+                        data = [x for x in track_features.get('tracks') if x is not None]
+                        results_df = pd.DataFrame(data)
+                        results_df = results_df.rename(columns={'id': 'raw_track_uri'})
+                        df_list.append(results_df)
+                        success = True
             except SpotifyException as e:
                 if e.http_status == 429:
                     retry_after = e.headers.get('Retry-After', 1)  # Use the Retry-After header if available
@@ -84,6 +92,7 @@ def pull_song_features(splice_list, market='US'):
                     break  # or handle the error as needed
             except Exception as general_exception:
                 print(f"An error occurred: {general_exception}")
+                # print(track_features)
                 break  # or handle the error as needed
         pos += 1
     if df_list:
@@ -244,7 +253,7 @@ if __name__ == '__main__':
         song_splices = list(generate_splices(unique_songs, 100))
         song_splices_50 = list(generate_splices(unique_songs, 50))
         artist_splices = list(generate_splices(unique_artists, 50))
-
+        
         # Pulling song features, artist data, and audio features
         print('Pulling Song Features')
         track_features = pull_song_features(song_splices_50)
