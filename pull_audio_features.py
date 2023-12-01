@@ -125,7 +125,7 @@ def pull_artists(splice_list):
                 request_count += 1
 
                 if response:
-                    results_df = pd.DataFrame(response)
+                    results_df = pd.DataFrame(response['artists'])
                     results_df = results_df.rename(columns={'id': 'raw_artist_uri'})
                     df_list.append(results_df)
                     success = True
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         track_features = track_features.rename(columns={'name': 'track_name', 'popularity': 'track_popularity'})
 
         # Extract the followers value.
-        # artists['followers'] = artists['followers'].apply(lambda x: x.get('total', 0) if isinstance(x, dict) else 0)
+        artists['followers'] = artists['followers'].apply(lambda x: x.get('total', 0) if isinstance(x, dict) else 0)
 
         # Ensure the 'artists' and 'album' columns are in the correct format
         track_features['artists'] = track_features['artists'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
