@@ -98,52 +98,54 @@ def join_data():
         'speechiness_avg_playlist', 'instrumentalness_avg_playlist', 'liveness_avg_playlist', 'valence_avg_playlist'
     ]
 
-    final = []
-    for x in file_list:
-        mpd = pd.read_parquet(f'./data/mpd.slice.{x}.parquet')
-        tracks = pd.read_csv(f'./data/track_feature_mpd.slice.{x}.csv')
-        audio_features = pd.read_csv(f'./data/songs_mpd.slice.{x}.csv')
-        artists = pd.read_csv(f'./data/artists_mpd.slice.{x}.csv')
+    mpd_0 = pd.read_parquet('./data/mpd.slice.0-999.parquet')
+    tracks_0 = pd.read_csv('./data/track_feature_mpd.slice.0-999.csv')
+    audio_features_0 = pd.read_csv('./data/songs_mpd.slice.0-999.csv')
+    artists_0 = pd.read_csv('./data/artists_mpd.slice.0-999.csv')
 
-        mpd['raw_track_uri'] = mpd['track_uri'].str.split(':')
-        mpd['raw_track_uri'] = mpd['raw_track_uri'].str[2]
-        mpd['raw_artist_uri'] = mpd['artist_uri'].str.split(':')
-        mpd['raw_artist_uri'] = mpd['raw_artist_uri'].str[2]
+    mpd_1 = pd.read_parquet('./data/mpd.slice.1000-1999.parquet')
+    tracks_1 = pd.read_csv('./data/track_feature_mpd.slice.1000-1999.csv')
+    audio_features_1 = pd.read_csv('./data/songs_mpd.slice.1000-1999.csv')
+    artists_1 = pd.read_csv('./data/artists_mpd.slice.1000-1999.csv')
 
-        test_mpd = mpd[mpd['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
-        test_audio_features = audio_features[audio_features['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
-        test_tracks = tracks[tracks['raw_track_uri'] == '0MYTcPXAAmeKBUpBgtAV0J']
+    mpd = pd.concat([mpd_0, mpd_1])
+    audio_features = pd.concat([audio_features_0, audio_features_1])
+    tracks = pd.concat([tracks_0, tracks_1])
+    artists = pd.concat([artists_0, artists_1])
 
-        merged_df = pd.merge(mpd, audio_features, on='raw_track_uri', how='outer', suffixes=('', '_audiofeature'))
-        merged_df = merged_df.merge(tracks, on='raw_track_uri', how='outer', suffixes=('', '_trackfeature'))
-        merged_df = merged_df.merge(artists, on='raw_artist_uri', how='outer', suffixes=('', '_artists'))
-        merged_df = merged_df.drop_duplicates(subset=['raw_track_uri', 'pid', 'pos'])
+    mpd['raw_track_uri'] = mpd['track_uri'].str.split(':')
+    mpd['raw_track_uri'] = mpd['raw_track_uri'].str[2]
+    mpd['raw_artist_uri'] = mpd['artist_uri'].str.split(':')
+    mpd['raw_artist_uri'] = mpd['raw_artist_uri'].str[2]
 
-        audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness',
-                                  'instrumentalness', 'liveness', 'valence']
-        artist_audio_features_avg = merged_df.groupby('artist_name')[audio_features_columns].mean().reset_index()
-        artist_audio_features_avg.columns = ['artist_name'] + [f'{col}_avg_artist' for col in audio_features_columns]
-        merged_df = pd.merge(merged_df, artist_audio_features_avg, on='artist_name', how='left')
+    merged_df = pd.merge(mpd, audio_features, on='raw_track_uri', how='outer', suffixes=('', '_audiofeature'))
+    merged_df = merged_df.merge(tracks, on='raw_track_uri', how='outer', suffixes=('', '_trackfeature'))
+    merged_df = merged_df.merge(artists, on='raw_artist_uri', how='outer', suffixes=('', '_artists'))
+    merged_df = merged_df.drop_duplicates(subset=['raw_track_uri', 'pid', 'pos'])
 
-        playlist_audio_features_avg = merged_df.groupby('name')[audio_features_columns].mean().reset_index()
-        playlist_audio_features_avg.columns = ['name'] + [f'{col}_avg_playlist' for col in audio_features_columns]
-        merged_df = pd.merge(merged_df, playlist_audio_features_avg, on='name', how='left')
 
-        # Apply the categorization function to each audio feature for songs, artists, and playlists
-        for feature in audio_features_songs:
-            merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
+    audio_features_columns = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness',
+                              'instrumentalness', 'liveness', 'valence']
+    artist_audio_features_avg = merged_df.groupby('artist_name')[audio_features_columns].mean().reset_index()
+    artist_audio_features_avg.columns = ['artist_name'] + [f'{col}_avg_artist' for col in audio_features_columns]
+    merged_df = pd.merge(merged_df, artist_audio_features_avg, on='artist_name', how='left')
 
-        for feature in audio_features_artists:
-            merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
+    playlist_audio_features_avg = merged_df.groupby('name')[audio_features_columns].mean().reset_index()
+    playlist_audio_features_avg.columns = ['name'] + [f'{col}_avg_playlist' for col in audio_features_columns]
+    merged_df = pd.merge(merged_df, playlist_audio_features_avg, on='name', how='left')
 
-        for feature in audio_features_playlists:
-            merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
+    # Apply the categorization function to each audio feature for songs, artists, and playlists
+    for feature in audio_features_songs:
+        merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
 
-        # Normalize the audio features.
-        merged_df = normalize_audio_features(merged_df)
-        final.append(merged_df)
+    for feature in audio_features_artists:
+        merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
 
-    final = pd.concat(final)
+    for feature in audio_features_playlists:
+        merged_df['category_' + feature] = merged_df[feature].apply(lambda x: categorize_feature(x, feature))
+
+    # Normalize the audio features.
+    merged_df = normalize_audio_features(merged_df)
 
     cols_to_keep = [
         'pos', 'artist_name', 'track_name', 'duration_ms', 'album_name', 'pid', 'name', 'modified_at', 'num_artists',
@@ -170,9 +172,9 @@ def join_data():
 
     ]
 
-    final = final[cols_to_keep]
-    final.to_csv('./processed_data/merged_dataset.csv', encoding='utf-8-sig', index=False)
-    final.to_parquet('./processed_data/merged_dataset.parquet')
+    merged_df = merged_df[cols_to_keep]
+    merged_df.to_csv('./processed_data/merged_dataset.csv', encoding='utf-8-sig', index=False)
+    merged_df.to_parquet('./processed_data/merged_dataset.parquet')
 
 
 if __name__ == '__main__':
